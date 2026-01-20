@@ -5,6 +5,7 @@
 import random
 import string
 import json
+import uuid
 from datetime import datetime, timedelta, date, time
 from typing import List, Dict, Any
 
@@ -15,6 +16,7 @@ class DataGenerator:
     def __init__(self, seed: int = None):
         if seed:
             random.seed(seed)
+        self._unique_counter = 0  # 用于生成唯一值
     
     # ========== 基础类型生成 ==========
     
@@ -149,6 +151,13 @@ class DataGenerator:
         vector = [round(random.uniform(-1, 1), 6) for _ in range(dimension)]
         return json.dumps(vector)
     
+    def generate_unique_varchar(self, max_length: int = 100) -> str:
+        """生成唯一的VARCHAR（用于unique_col）"""
+        self._unique_counter += 1
+        # 使用计数器 + UUID的一部分确保唯一性
+        unique_part = str(uuid.uuid4())[:8]
+        return f"unique_{self._unique_counter}_{unique_part}"
+    
     # ========== 表数据生成 ==========
     
     def generate_base_table_row(self) -> Dict[str, Any]:
@@ -183,5 +192,5 @@ class DataGenerator:
             'composite_key_part': self.generate_varchar(50),
             'idx_col1': self.generate_int(),
             'idx_col2': self.generate_varchar(100),
-            'unique_col': self.generate_varchar(100)
+            'unique_col': self.generate_unique_varchar(100)  # 使用唯一值生成器
         }
