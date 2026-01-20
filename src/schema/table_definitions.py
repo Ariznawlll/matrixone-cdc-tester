@@ -101,8 +101,7 @@ CREATE TABLE IF NOT EXISTS cdc_test_vector_index (
     name VARCHAR(100),
     embedding VECF32(128),
     metadata JSON,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    VECTOR INDEX vec_idx (embedding)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
 """
 

@@ -49,8 +49,16 @@ def create_tables(conn, table_group: str = 'basic'):
                     cursor.execute(schema)
                     conn.commit()
                     print(f"{Fore.GREEN}✓ 创建表: cdc_test_{table_key}{Style.RESET_ALL}")
+                except pymysql.err.OperationalError as e:
+                    # 检查是否是表已存在的错误
+                    if 'already exists' in str(e).lower() or 'table' in str(e).lower() and 'exists' in str(e).lower():
+                        print(f"{Fore.YELLOW}⚠ 表已存在: cdc_test_{table_key}{Style.RESET_ALL}")
+                    else:
+                        print(f"{Fore.RED}✗ 创建表失败 (cdc_test_{table_key}): {str(e)}{Style.RESET_ALL}")
+                        return False
                 except Exception as e:
-                    print(f"{Fore.YELLOW}⚠ 表可能已存在: cdc_test_{table_key}{Style.RESET_ALL}")
+                    print(f"{Fore.RED}✗ 创建表失败 (cdc_test_{table_key}): {str(e)}{Style.RESET_ALL}")
+                    return False
     
     return True
 
