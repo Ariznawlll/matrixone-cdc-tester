@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS cdc_test_base (
     col_bool BOOL DEFAULT FALSE,
     
     -- 向量类型
-    col_vector VECF32(3),
+    col_vector VECF32(512),
     
     -- 复合主键辅助列
     composite_key_part VARCHAR(50) NOT NULL DEFAULT 'default',

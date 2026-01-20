@@ -276,7 +276,7 @@ CREATE TABLE cdc_test_base (
     col_bool BOOL DEFAULT FALSE,
     
     -- 向量类型
-    col_vector VECF32(3),
+    col_vector VECF32(512),
     
     -- 索引列
     idx_col1 INT,

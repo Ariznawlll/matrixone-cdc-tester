@@ -147,7 +147,7 @@ class TableInserter:
 - **用途**：全文索引同步测试（单独测试）
 
 ### 4. cdc_test_vector_index (向量索引表)
-- **向量类型**：VECF32(128)
+- **向量类型**：VECF32(1536)
 - **向量索引**：embedding
 - **用途**：向量数据同步测试
 

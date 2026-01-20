@@ -188,7 +188,7 @@ class DataGenerator:
             'col_datetime': self.generate_datetime(),
             'col_year': self.generate_year(),
             'col_bool': self.generate_bool(),
-            'col_vector': self.generate_vector(3),
+            'col_vector': self.generate_vector(512),
             'composite_key_part': self.generate_varchar(50),
             'idx_col1': self.generate_int(),
             'idx_col2': self.generate_varchar(100),
