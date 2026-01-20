@@ -119,7 +119,7 @@ class TableInserter:
                 batch = min(self.batch_size, count - inserted)
                 for _ in range(batch):
                     name = self.generator.generate_varchar(100)
-                    embedding = self.generator.generate_vector(128)
+                    embedding = self.generator.generate_vector(1536)
                     metadata = self.generator.generate_json()
                     
                     cursor.execute(sql, (name, embedding, metadata))

@@ -99,7 +99,7 @@ VECTOR_INDEX_TABLE_SCHEMA = """
 CREATE TABLE IF NOT EXISTS cdc_test_vector_index (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100),
-    embedding VECF32(128),
+    embedding VECF32(1536),
     metadata JSON,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
