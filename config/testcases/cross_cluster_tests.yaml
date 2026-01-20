@@ -1,0 +1,66 @@
+test_suite:
+  name: "Cross-Cluster CDC Test Suite"
+  description: "跨集群CDC (CCPR) 专用测试用例"
+
+test_groups:
+  basic:
+    - "CCPR001"
+    - "CCPR002"
+    - "CCPR003"
+  subscription_management:
+    - "CCPR004"
+    - "CCPR005"
+  error_handling:
+    - "CCPR006"
+
+test_cases:
+  - id: "CCPR001"
+    name: "Database级别跨集群同步测试"
+    description: "测试整个数据库的跨集群同步"
+    table: "cdc_test_base"
+    steps:
+      - action: "validate_sync"
+        timeout: 180
+
+  - id: "CCPR002"
+    name: "跨集群UPDATE操作同步"
+    description: "测试跨集群环境下的UPDATE操作"
+    table: "cdc_test_base"
+    steps:
+      - action: "update"
+        sql: "UPDATE cdc_test_base SET col_varchar = 'cross_cluster_update' WHERE id <= 20"
+      - action: "validate_sync"
+        timeout: 180
+
+  - id: "CCPR003"
+    name: "跨集群DELETE操作同步"
+    description: "测试跨集群环境下的DELETE操作"
+    table: "cdc_test_base"
+    steps:
+      - action: "delete"
+        sql: "DELETE FROM cdc_test_base WHERE id > 950"
+      - action: "validate_sync"
+        timeout: 180
+
+  - id: "CCPR004"
+    name: "Subscription状态检查"
+    description: "检查Subscription的运行状态"
+    steps:
+      - action: "check_subscription_status"
+        expected_state: 0  # 0=running
+
+  - id: "CCPR005"
+    name: "同步延迟测试"
+    description: "测试跨集群同步的延迟情况"
+    table: "cdc_test_base"
+    steps:
+      - action: "measure_sync_delay"
+        insert_count: 100
+
+  - id: "CCPR006"
+    name: "网络中断恢复测试"
+    description: "模拟网络中断后的自动恢复"
+    steps:
+      - action: "simulate_network_issue"
+      - action: "wait_for_recovery"
+        timeout: 300

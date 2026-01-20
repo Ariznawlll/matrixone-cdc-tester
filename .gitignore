@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# 只忽略当前目录下的文件，不扫描父目录
+/**/
+!*/

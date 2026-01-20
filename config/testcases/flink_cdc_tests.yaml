@@ -1,0 +1,71 @@
+test_suite:
+  name: "Flink CDC Test Suite"
+  description: "Flink CDC (MySQL to MO) 专用测试用例"
+
+test_groups:
+  basic:
+    - "FLINK001"
+    - "FLINK002"
+    - "FLINK003"
+  incremental:
+    - "FLINK004"
+    - "FLINK005"
+  monitoring:
+    - "FLINK006"
+
+test_cases:
+  - id: "FLINK001"
+    name: "全量数据同步测试"
+    description: "测试MySQL已有数据的全量同步到MO"
+    table: "cdc_test_base"
+    steps:
+      - action: "validate_sync"
+        timeout: 180
+
+  - id: "FLINK002"
+    name: "增量INSERT同步测试"
+    description: "测试MySQL新增数据的增量同步"
+    table: "cdc_test_base"
+    steps:
+      - action: "insert"
+        sql: "INSERT INTO cdc_test_base (col_varchar, col_int) VALUES ('flink_test', 999)"
+      - action: "validate_sync"
+        timeout: 120
+
+  - id: "FLINK003"
+    name: "增量UPDATE同步测试"
+    description: "测试MySQL更新数据的增量同步"
+    table: "cdc_test_base"
+    steps:
+      - action: "update"
+        sql: "UPDATE cdc_test_base SET col_varchar = 'flink_updated' WHERE id <= 10"
+      - action: "validate_sync"
+        timeout: 120
+
+  - id: "FLINK004"
+    name: "批量数据同步测试"
+    description: "测试大批量数据的同步性能"
+    table: "cdc_test_base"
+    steps:
+      - action: "bulk_insert"
+        count: 5000
+      - action: "validate_sync"
+        timeout: 300
+
+  - id: "FLINK005"
+    name: "DELETE操作同步测试"
+    description: "测试MySQL删除数据的同步"
+    table: "cdc_test_base"
+    steps:
+      - action: "delete"
+        sql: "DELETE FROM cdc_test_base WHERE id > 900"
+      - action: "validate_sync"
+        timeout: 120
+
+  - id: "FLINK006"
+    name: "Producer/Consumer状态检查"
+    description: "检查Flink CDC组件运行状态"
+    steps:
+      - action: "check_producer_status"
+      - action: "check_consumer_status"
+      - action: "check_kafka_status"

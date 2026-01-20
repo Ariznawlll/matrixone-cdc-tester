@@ -1,0 +1,27 @@
+scenario_name: "MO to MO CDC"
+scenario_type: "mo_to_mo"
+
+source:
+  type: "matrixone"
+  host: "localhost"
+  port: 6001
+  user: "root"
+  password: "111"
+  database: "source_db"
+
+target:
+  type: "matrixone"
+  host: "localhost"
+  port: 6002
+  user: "root"
+  password: "111"
+  database: "target_db"
+
+cdc_config:
+  sync_mode: "realtime"
+  tables: ["*"]
+  batch_size: 1000
+  
+validation:
+  check_interval: 5
+  max_wait_time: 60

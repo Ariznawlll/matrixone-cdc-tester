@@ -1,0 +1,104 @@
+test_suite:
+  name: "CDC Common Test Suite"
+  description: "通用CDC测试用例，适用于所有场景"
+
+test_groups:
+  basic:
+    - "TC001"
+    - "TC002"
+    - "TC003"
+    - "TC004"
+    - "TC005"
+  fulltext:
+    - "TC006"
+  vector:
+    - "TC007"
+  partition:
+    - "TC008"
+    - "TC009"
+    - "TC010"
+
+test_cases:
+  - id: "TC001"
+    name: "基础表数据同步测试"
+    description: "测试基础表所有数据类型的同步"
+    table: "cdc_test_base"
+    steps:
+      - action: "validate_sync"
+        timeout: 120
+
+  - id: "TC002"
+    name: "基础表UPDATE操作测试"
+    description: "测试UPDATE操作的同步"
+    table: "cdc_test_base"
+    steps:
+      - action: "update"
+        sql: "UPDATE cdc_test_base SET col_varchar = 'updated' WHERE id <= 10"
+      - action: "validate_sync"
+        timeout: 60
+
+  - id: "TC003"
+    name: "基础表DELETE操作测试"
+    description: "测试DELETE操作的同步"
+    table: "cdc_test_base"
+    steps:
+      - action: "delete"
+        sql: "DELETE FROM cdc_test_base WHERE id > 900"
+      - action: "validate_sync"
+        timeout: 60
+
+  - id: "TC004"
+    name: "复合主键表同步测试"
+    description: "测试复合主键表的数据同步"
+    table: "cdc_test_composite_pk"
+    steps:
+      - action: "validate_sync"
+        timeout: 120
+
+  - id: "TC005"
+    name: "索引数据一致性测试"
+    description: "测试带索引的数据查询一致性"
+    table: "cdc_test_base"
+    steps:
+      - action: "validate_index_query"
+        sql: "SELECT * FROM cdc_test_base WHERE idx_col1 > 1000 ORDER BY idx_col1 LIMIT 100"
+
+  - id: "TC006"
+    name: "全文索引表同步测试"
+    description: "测试全文索引表的数据同步"
+    table: "cdc_test_fulltext"
+    steps:
+      - action: "validate_sync"
+        timeout: 180
+
+  - id: "TC007"
+    name: "向量索引表同步测试"
+    description: "测试向量索引表的数据同步"
+    table: "cdc_test_vector_index"
+    steps:
+      - action: "validate_sync"
+        timeout: 180
+
+  - id: "TC008"
+    name: "Range分区表同步测试"
+    description: "测试Range分区表的数据同步"
+    table: "cdc_test_partition_range"
+    steps:
+      - action: "validate_sync"
+        timeout: 120
+
+  - id: "TC009"
+    name: "Hash分区表同步测试"
+    description: "测试Hash分区表的数据同步"
+    table: "cdc_test_partition_hash"
+    steps:
+      - action: "validate_sync"
+        timeout: 120
+
+  - id: "TC010"
+    name: "List分区表同步测试"
+    description: "测试List分区表的数据同步"
+    table: "cdc_test_partition_list"
+    steps:
+      - action: "validate_sync"
+        timeout: 120

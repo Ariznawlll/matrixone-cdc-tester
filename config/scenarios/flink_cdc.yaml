@@ -1,0 +1,51 @@
+scenario_name: "Flink CDC (MySQL to MO)"
+scenario_type: "flink_cdc"
+description: "通过Flink CDC将MySQL数据同步到MatrixOne"
+
+# MySQL源配置
+source:
+  type: "mysql"
+  host: "localhost"
+  port: 3306
+  user: "root"
+  password: "password"
+  database: "test_db"
+
+# MatrixOne目标配置
+target:
+  type: "matrixone"
+  host: "localhost"
+  port: 6001
+  user: "root"
+  password: "111"
+  database: "test_db"
+
+# Flink CDC配置
+flink_cdc:
+  # Flink CDC代码库路径
+  path: "../flink-cdc"
+  
+  # 要同步的表（逗号分隔）
+  tables:
+    - "cdc_test_base"
+    - "cdc_test_composite_pk"
+  
+  # Kafka主题名
+  topic: "cdc_test_topic"
+  
+  # Consumer批量大小
+  consumer_batch_size: 2000
+  
+  # Consumer组名
+  group: "cdc_test_group"
+  
+  # 测试完成后是否停止Kafka
+  stop_kafka_on_teardown: false
+
+# 验证配置
+validation:
+  # 检查间隔（秒）
+  check_interval: 10
+  
+  # 最大等待时间（秒）
+  max_wait_time: 180

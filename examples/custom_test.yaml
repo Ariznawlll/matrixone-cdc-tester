@@ -1,0 +1,34 @@
+test_suite:
+  name: "自定义测试套件示例"
+  description: "展示如何创建自定义测试用例"
+
+test_cases:
+  - id: "CUSTOM001"
+    name: "复杂数据类型测试"
+    description: "测试JSON、TEXT等复杂类型的同步"
+    steps:
+      - action: "create_table"
+        table: "test_complex"
+        schema:
+          - "id INT PRIMARY KEY"
+          - "json_data JSON"
+          - "text_data TEXT"
+      - action: "insert"
+        table: "test_complex"
+        data:
+          - {id: 1, json_data: '{"key": "value"}', text_data: "长文本内容"}
+      - action: "validate"
+        check: "data_match"
+        table: "test_complex"
+
+  - id: "CUSTOM002"
+    name: "并发写入测试"
+    description: "测试高并发场景下的数据一致性"
+    steps:
+      - action: "concurrent_insert"
+        table: "test_users"
+        threads: 10
+        rows_per_thread: 100
+      - action: "validate"
+        check: "row_count"
+        expected: 1000

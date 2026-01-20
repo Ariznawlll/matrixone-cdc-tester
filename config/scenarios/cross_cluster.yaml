@@ -1,0 +1,44 @@
+scenario_name: "Cross Cluster CDC (CCPR)"
+scenario_type: "cross_cluster"
+description: "跨集群复制测试 - 使用MatrixOne CCPR功能"
+
+# 上游集群配置（Publication端）
+source:
+  type: "matrixone"
+  host: "localhost"
+  port: 6001
+  user: "root"
+  password: "111"
+  account: "account0"  # 上游账户
+  database: "test_db"
+  # table: "cdc_test_base"  # 可选，table级别同步时使用
+
+# 下游集群配置（Subscription端）
+target:
+  type: "matrixone"
+  host: "localhost"
+  port: 6002
+  user: "root"
+  password: "111"
+  account: "account1"  # 下游账户（需要被上游授权）
+  database: "test_db"
+  # table: "cdc_test_base"  # 可选，table级别同步时使用
+
+# CDC配置
+cdc_config:
+  # 同步级别: account, database, table
+  sync_level: "database"
+  
+  # 同步间隔（秒）
+  sync_interval: 60
+  
+  # 是否启用网络压缩（未来功能）
+  network_compression: false
+  
+# 验证配置
+validation:
+  # 检查间隔（秒）
+  check_interval: 10
+  
+  # 最大等待时间（秒）
+  max_wait_time: 180

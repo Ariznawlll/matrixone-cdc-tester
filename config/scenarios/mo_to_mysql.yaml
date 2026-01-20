@@ -1,0 +1,29 @@
+scenario_name: "MO to MySQL CDC"
+scenario_type: "mo_to_mysql"
+
+source:
+  type: "matrixone"
+  host: "localhost"
+  port: 6001
+  user: "root"
+  password: "111"
+  database: "source_db"
+
+target:
+  type: "mysql"
+  host: "localhost"
+  port: 3306
+  user: "root"
+  password: "password"
+  database: "target_db"
+
+cdc_config:
+  sync_mode: "realtime"
+  tables: ["*"]
+  batch_size: 500
+  type_mapping:
+    enabled: true
+  
+validation:
+  check_interval: 5
+  max_wait_time: 60
