@@ -65,21 +65,26 @@ mysql -h localhost -P 6002 -u root -p
 ### 数据生成
 
 ```bash
-# 基础表（1000条）
-python generate_data.py --database test_db --group basic --count 1000
+# 基础表（1000条）并创建向量索引
+python generate_data.py --database test_db --group basic --count 1000 --create-indexes
 
 # 分区表（10000条）
 python generate_data.py --database test_db --group partition --count 10000
 
-# 全文索引表（500条，较慢）
-python generate_data.py --database test_db --group fulltext --count 500
+# 全文索引表（500条，较慢）并创建全文索引
+python generate_data.py --database test_db --group fulltext --count 500 --create-indexes
 
-# 向量索引表（1000条）
-python generate_data.py --database test_db --group vector --count 1000
+# 向量索引表（1000条）并创建向量索引
+python generate_data.py --database test_db --group vector --count 1000 --create-indexes
 
 # 只创建表结构，不插入数据
 python generate_data.py --database test_db --group basic --create-only
+
+# 只创建索引（表和数据已存在）
+python generate_data.py --database test_db --group basic --indexes-only
 ```
+
+> **性能提示**: 大数据量（>10000条）建议使用 `--create-indexes` 参数
 
 ### 运行测试
 

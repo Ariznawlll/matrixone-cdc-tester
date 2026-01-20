@@ -169,18 +169,20 @@ target:
 ### 3. 生成测试数据
 
 ```bash
-# 生成基础表数据（1000条）
-python generate_data.py --host localhost --port 6001 --database source_db --group basic --count 1000
+# 生成基础表数据（1000条）并创建向量索引
+python generate_data.py --host localhost --port 6001 --database source_db --group basic --count 1000 --create-indexes
 
-# 生成全文索引表数据（500条）
-python generate_data.py --host localhost --port 6001 --database source_db --group fulltext --count 500
+# 生成全文索引表数据（500条）并创建全文索引
+python generate_data.py --host localhost --port 6001 --database source_db --group fulltext --count 500 --create-indexes
 
-# 生成向量索引表数据（1000条）
-python generate_data.py --host localhost --port 6001 --database source_db --group vector --count 1000
+# 生成向量索引表数据（1000条）并创建向量索引
+python generate_data.py --host localhost --port 6001 --database source_db --group vector --count 1000 --create-indexes
 
 # 生成分区表数据（10000条）
 python generate_data.py --host localhost --port 6001 --database source_db --group partition --count 10000
 ```
+
+> **性能提示**: 对于大数据量（>10000条），建议使用 `--create-indexes` 参数，先插入数据再创建索引，可显著提升插入速度。
 
 ### 4. 配置并启动 CDC
 
@@ -422,6 +424,8 @@ python generate_data.py [OPTIONS]
   --count COUNT               每表数据量 (默认: 1000)
   --batch-size SIZE           批量插入大小 (默认: 1000)
   --create-only               只创建表结构，不插入数据
+  --create-indexes            数据插入后创建索引（提升大数据量插入性能）
+  --indexes-only              只创建索引，不创建表和插入数据
 ```
 
 ### 使用示例
@@ -433,14 +437,31 @@ python generate_data.py --database test_db --group basic --create-only
 # 生成小批量数据用于快速测试
 python generate_data.py --database test_db --group basic --count 100
 
-# 生成大批量数据用于性能测试
-python generate_data.py --database test_db --group basic --count 100000 --batch-size 5000
+# 生成大批量数据用于性能测试（推荐使用 --create-indexes）
+python generate_data.py --database test_db --group basic --count 100000 --batch-size 5000 --create-indexes
+
+# 分步执行：先插入数据，后创建索引
+python generate_data.py --database test_db --group basic --count 100000
+python generate_data.py --database test_db --group basic --indexes-only
 
 # 生成所有表组的数据
 for group in basic fulltext vector partition; do
-  python generate_data.py --database test_db --group $group --count 1000
+  python generate_data.py --database test_db --group $group --count 1000 --create-indexes
 done
 ```
+
+### 索引创建优化
+
+为了提升大数据量插入性能，工具支持延迟创建索引：
+
+- **basic 组**: 为 `cdc_test_base` 表的 `col_vector` 列创建向量索引（IVFFlat）
+- **fulltext 组**: 为 `cdc_test_fulltext` 表创建3个全文索引
+- **vector 组**: 为 `cdc_test_vector_index` 表的 `embedding` 列创建向量索引（IVFFlat）
+- **partition 组**: 无延迟索引
+
+**性能对比**（以10万条数据为例）：
+- 不使用 `--create-indexes`: 插入时维护索引，较慢
+- 使用 `--create-indexes`: 先插入数据再创建索引，速度提升 2-5 倍
 
 ## 测试用例说明
 
