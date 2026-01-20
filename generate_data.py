@@ -8,7 +8,7 @@ import argparse
 import pymysql
 import sys
 from colorama import Fore, Style, init
-from src.schema.table_definitions import TABLE_SCHEMAS, TABLE_GROUPS
+from src.schema.table_definitions import TABLE_SCHEMAS, TABLE_GROUPS, INDEX_CREATION_SQLS
 from src.data.table_inserter import TableInserter
 
 init(autoreset=True)
@@ -93,6 +93,31 @@ def generate_data(conn, table_group: str, count: int, batch_size: int = 1000):
             continue
 
 
+def create_indexes(conn, table_group: str):
+    """创建索引（数据插入后执行以提升性能）"""
+    print(f"\n{Fore.CYAN}创建索引 (组: {table_group})...{Style.RESET_ALL}\n")
+    
+    tables = TABLE_GROUPS.get(table_group, [])
+    index_created = False
+    
+    with conn.cursor() as cursor:
+        for table_key in tables:
+            if table_key in INDEX_CREATION_SQLS:
+                index_sql = INDEX_CREATION_SQLS[table_key]
+                try:
+                    print(f"正在为 cdc_test_{table_key} 创建索引...")
+                    cursor.execute(index_sql)
+                    conn.commit()
+                    print(f"{Fore.GREEN}✓ 索引创建成功: cdc_test_{table_key}{Style.RESET_ALL}")
+                    index_created = True
+                except Exception as e:
+                    print(f"{Fore.RED}✗ 索引创建失败 (cdc_test_{table_key}): {str(e)}{Style.RESET_ALL}")
+    
+    if not index_created:
+        print(f"{Fore.YELLOW}⚠ 该表组没有需要延迟创建的索引{Style.RESET_ALL}")
+
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='MatrixOne CDC 测试数据生成工具',
@@ -102,20 +127,27 @@ def main():
   # 生成基础表数据（1000条）
   python generate_data.py --host localhost --port 6001 --database test_db --count 1000
   
-  # 生成全文索引表数据（500条）
-  python generate_data.py --host localhost --port 6001 --database test_db --group fulltext --count 500
+  # 生成全文索引表数据（500条），数据插入后创建索引
+  python generate_data.py --host localhost --port 6001 --database test_db --group fulltext --count 500 --create-indexes
   
   # 生成分区表数据（10000条）
   python generate_data.py --host localhost --port 6001 --database test_db --group partition --count 10000
   
   # 只创建表结构，不插入数据
   python generate_data.py --host localhost --port 6001 --database test_db --create-only
+  
+  # 只创建索引（表和数据已存在）
+  python generate_data.py --host localhost --port 6001 --database test_db --group fulltext --indexes-only
 
 表组说明:
   basic     - 基础表和复合主键表（默认）
-  fulltext  - 全文索引表
+  fulltext  - 全文索引表（建议使用 --create-indexes）
   vector    - 向量索引表
   partition - 分区表（Range/Hash/List）
+
+性能优化:
+  对于大数据量插入，建议使用 --create-indexes 选项
+  这样会先插入数据，然后再创建索引，可以显著提升插入速度
         """
     )
     
@@ -136,6 +168,10 @@ def main():
                        help='批量插入大小 (默认: 1000)')
     parser.add_argument('--create-only', action='store_true',
                        help='只创建表结构，不插入数据')
+    parser.add_argument('--create-indexes', action='store_true',
+                       help='创建索引（在数据插入后执行，提升大数据量插入性能）')
+    parser.add_argument('--indexes-only', action='store_true',
+                       help='只创建索引，不创建表和插入数据')
     
     args = parser.parse_args()
     
@@ -143,6 +179,14 @@ def main():
     conn = create_connection(args.host, args.port, args.user, args.password, args.database)
     
     try:
+        # 只创建索引模式
+        if args.indexes_only:
+            create_indexes(conn, args.group)
+            print(f"\n{Fore.GREEN}{'='*60}")
+            print(f"✓ 索引创建完成!")
+            print(f"{'='*60}{Style.RESET_ALL}\n")
+            return 0
+        
         # 创建表
         if not create_tables(conn, args.group):
             return 1
@@ -150,6 +194,10 @@ def main():
         # 生成数据
         if not args.create_only:
             generate_data(conn, args.group, args.count, args.batch_size)
+            
+            # 如果指定了 --create-indexes，在数据插入后创建索引
+            if args.create_indexes:
+                create_indexes(conn, args.group)
         
         print(f"\n{Fore.GREEN}{'='*60}")
         print(f"✓ 数据生成完成!")

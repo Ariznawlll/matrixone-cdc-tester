@@ -87,11 +87,16 @@ CREATE TABLE IF NOT EXISTS cdc_test_fulltext (
     title VARCHAR(255),
     content TEXT,
     description TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FULLTEXT INDEX ft_title (title),
-    FULLTEXT INDEX ft_content (content),
-    FULLTEXT INDEX ft_composite (title, description)
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
+"""
+
+# 全文索引创建语句（数据插入后执行）
+FULLTEXT_INDEXES = """
+ALTER TABLE cdc_test_fulltext 
+ADD FULLTEXT INDEX ft_title (title),
+ADD FULLTEXT INDEX ft_content (content),
+ADD FULLTEXT INDEX ft_composite (title, description)
 """
 
 # 向量索引表（单独测试）
@@ -103,6 +108,17 @@ CREATE TABLE IF NOT EXISTS cdc_test_vector_index (
     metadata JSON,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 )
+"""
+
+# 向量索引创建语句（数据插入后执行）
+# 基础表的向量索引
+BASE_TABLE_VECTOR_INDEX = """
+CREATE INDEX idx_base_vector USING ivfflat ON cdc_test_base(col_vector) lists=256 op_type "vector_l2_ops"
+"""
+
+# 向量索引表的向量索引
+VECTOR_INDEX_TABLE_INDEX = """
+CREATE INDEX idx_embedding USING ivfflat ON cdc_test_vector_index(embedding) lists=256 op_type "vector_l2_ops"
 """
 
 # 分区表 - Range分区
@@ -166,6 +182,13 @@ TABLE_SCHEMAS = {
     'partition_range': PARTITION_RANGE_TABLE_SCHEMA,
     'partition_hash': PARTITION_HASH_TABLE_SCHEMA,
     'partition_list': PARTITION_LIST_TABLE_SCHEMA
+}
+
+# 索引创建语句映射（数据插入后执行以提升性能）
+INDEX_CREATION_SQLS = {
+    'base': BASE_TABLE_VECTOR_INDEX,
+    'fulltext': FULLTEXT_INDEXES,
+    'vector_index': VECTOR_INDEX_TABLE_INDEX
 }
 
 # 表分组 - 用于测试组织
